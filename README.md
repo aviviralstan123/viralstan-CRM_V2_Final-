@@ -66,3 +66,5 @@ This project is fully configured for deployment on Vercel.
     - `api/`: Centralized API calls using the base URL
     - `hooks/`: Custom hooks for data fetching
     - `utils/`: Utility functions like `getApiBaseUrl.js`
+
+    ...
