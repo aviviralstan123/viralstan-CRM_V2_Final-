@@ -95,3 +95,4 @@ This project is fully configured for deployment on Vercel.
     - `hooks/`: Custom hooks for data fetching
     - `utils/`: Utility functions like `getApiBaseUrl.js`
 
+..
