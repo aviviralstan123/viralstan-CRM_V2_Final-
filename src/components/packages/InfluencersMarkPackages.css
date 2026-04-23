@@ -1,0 +1,72 @@
+
+.final-wrapper {
+  background: #f5f6f8;
+  padding: 80px;
+  font-family: "Inter", sans-serif;
+}
+
+/* STATS ROW */
+.stats-row {
+  display: flex;
+  justify-content: space-between;
+  text-align: center;
+  margin-bottom: 80px;
+}
+
+.stat h1 {
+  font-size: 42px;
+  font-weight: 800;
+  background: linear-gradient(90deg, #2f66ff, #6b4bff);
+  background-clip: text;  
+  -webkit-background-clip: text;  
+  -webkit-text-fill-color: transparent;
+}
+
+.stat p {
+  margin-top: 5px;
+  font-size: 14px;
+  color: #666;
+}
+
+/* CTA BOX */
+.cta-container {
+  background: #ffffff;
+  border-radius: 30px;
+  padding: 60px;
+  text-align: center;
+
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.cta-container h2 {
+  font-size: 36px;
+  font-weight: 800;
+  color: #1a1a1a;
+  margin-bottom: 15px;
+}
+
+.cta-container p {
+  font-size: 15px;
+  color: #666;
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+
+/* BUTTON */
+.launch-btn {
+  padding: 14px 30px;
+  border-radius: 14px;
+  border: none;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+
+  background: linear-gradient(135deg, #2f66ff, #6b4bff);
+  transition: 0.3s;
+}
+
+.launch-btn:hover {
+  transform: scale(1.05);
+}
