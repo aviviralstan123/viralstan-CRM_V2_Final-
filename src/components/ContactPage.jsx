@@ -376,7 +376,21 @@ const StrategyForm = () => {
   const [selectedServices, setSelectedServices] = useState([]);
   const [selectedBudget, setSelectedBudget] = useState("");
 
+  // ── Form field state ──
+  const [fullName, setFullName]     = useState("");
+  const [email, setEmail]           = useState("");
+  const [phone, setPhone]           = useState("");
+  const [company, setCompany]       = useState("");
+  const [goals, setGoals]           = useState("");
+
+  // ── Submission state ──
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted]   = useState(false);
+  const [errorMsg, setErrorMsg]     = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
+
   const inputBase = "w-full rounded-xl bg-[#f1f4f9] border-none px-4 py-4 text-[#111827] placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500 transition-all outline-none";
+  const inputError = "w-full rounded-xl bg-red-50 border border-red-300 px-4 py-4 text-[#111827] placeholder:text-slate-400 focus:ring-2 focus:ring-red-400 transition-all outline-none";
   const chipBase = "px-4 py-3 rounded-xl bg-[#f1f4f9] text-[11px] font-bold uppercase tracking-wider text-slate-700 transition-all hover:bg-slate-200";
   const chipActive = "bg-indigo-600 text-white hover:bg-indigo-700";
 
@@ -385,6 +399,80 @@ const StrategyForm = () => {
       prev.includes(s) ? prev.filter(i => i !== s) : [...prev, s]
     );
   };
+
+  // ── Client-side validation ──
+  const validate = () => {
+    const errs = {};
+    if (!fullName.trim()) errs.fullName = "Name is required";
+    if (!email.trim()) errs.email = "Email is required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = "Enter a valid email";
+    if (phone && !/^[0-9+\-\s()]{7,20}$/.test(phone)) errs.phone = "Enter a valid phone number";
+    if (goals.length > 2000) errs.goals = "Message is too long (max 2000 chars)";
+    return errs;
+  };
+
+  // ── Submit handler ──
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErrorMsg("");
+    setFieldErrors({});
+
+    const errs = validate();
+    if (Object.keys(errs).length > 0) {
+      setFieldErrors(errs);
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const { submitLead } = await import("../services/leadApi");
+      await submitLead({
+        name:               fullName.trim(),
+        email:              email.trim(),
+        phone:              phone.trim() || null,
+        company:            company.trim() || null,
+        service_interested: selectedServices.join(", ") || null,
+        budget:             selectedBudget || null,
+        message:            goals.trim()  || null,
+      });
+
+      setSubmitted(true);
+      // Reset form fields
+      setFullName(""); setEmail(""); setPhone(""); setCompany(""); setGoals("");
+      setSelectedServices([]); setSelectedBudget("");
+    } catch (err) {
+      setErrorMsg(err.message || "Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // ── Success state ──
+  if (submitted) {
+    return (
+      <section className="px-4 py-16 bg-[#fafafa]">
+        <div className="mx-auto max-w-[850px] rounded-[40px] bg-white px-6 py-16 shadow-sm sm:px-16 sm:py-24 text-center">
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50">
+            <svg className="h-10 w-10 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h2 className="text-[32px] font-black text-[#111827] sm:text-4xl">
+            Strategy Request Received!
+          </h2>
+          <p className="mt-4 text-base text-slate-500 sm:text-lg font-medium max-w-md mx-auto">
+            Our growth team will review your goals and get back to you within 24 hours.
+          </p>
+          <button
+            onClick={() => setSubmitted(false)}
+            className="mt-8 rounded-2xl bg-gradient-to-r from-[#4461f2] to-[#8e44ff] px-8 py-4 text-sm font-bold text-white shadow-lg transition-all hover:scale-[1.02] active:scale-95"
+          >
+            Submit Another Request
+          </button>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="px-4 py-16 bg-[#fafafa]">
@@ -400,28 +488,60 @@ const StrategyForm = () => {
           </p>
         </div>
 
-        <form className="flex flex-col gap-8" onSubmit={(e) => e.preventDefault()}>
+        {/* Global error banner */}
+        {errorMsg && (
+          <div className="mb-8 rounded-xl bg-red-50 border border-red-200 px-5 py-4 text-sm text-red-700 font-medium">
+            {errorMsg}
+          </div>
+        )}
+
+        <form className="flex flex-col gap-8" onSubmit={handleSubmit}>
           
           {/* Input Grid */}
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div>
-              <label className="mb-2.5 block text-[13px] font-bold text-[#374151] ml-1">Full Name</label>
-              <input className={inputBase} placeholder="John Doe" />
+              <label className="mb-2.5 block text-[13px] font-bold text-[#374151] ml-1">Full Name <span className="text-red-400">*</span></label>
+              <input
+                className={fieldErrors.fullName ? inputError : inputBase}
+                placeholder="John Doe"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+              />
+              {fieldErrors.fullName && <p className="mt-1.5 ml-1 text-xs text-red-500 font-medium">{fieldErrors.fullName}</p>}
             </div>
 
             <div>
-              <label className="mb-2.5 block text-[13px] font-bold text-[#374151] ml-1">Business Email</label>
-              <input className={inputBase} placeholder="john@company.com" type="email" />
+              <label className="mb-2.5 block text-[13px] font-bold text-[#374151] ml-1">Business Email <span className="text-red-400">*</span></label>
+              <input
+                className={fieldErrors.email ? inputError : inputBase}
+                placeholder="john@company.com"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              {fieldErrors.email && <p className="mt-1.5 ml-1 text-xs text-red-500 font-medium">{fieldErrors.email}</p>}
             </div>
 
             <div>
               <label className="mb-2.5 block text-[13px] font-bold text-[#374151] ml-1">Phone Number</label>
-              <input className={inputBase} placeholder="+91 98765 43210" type="tel" />
+              <input
+                className={fieldErrors.phone ? inputError : inputBase}
+                placeholder="+91 98765 43210"
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
+              {fieldErrors.phone && <p className="mt-1.5 ml-1 text-xs text-red-500 font-medium">{fieldErrors.phone}</p>}
             </div>
 
             <div>
               <label className="mb-2.5 block text-[13px] font-bold text-[#374151] ml-1">Business Name</label>
-              <input className={inputBase} placeholder="Enter Company" />
+              <input
+                className={inputBase}
+                placeholder="Enter Company"
+                value={company}
+                onChange={(e) => setCompany(e.target.value)}
+              />
             </div>
           </div>
 
@@ -463,18 +583,36 @@ const StrategyForm = () => {
           <div>
             <label className="mb-2.5 block text-[13px] font-bold text-[#374151] ml-1">Tell us about your goals</label>
             <textarea
-              className={`${inputBase} min-h-[140px] resize-none pt-4`}
+              className={fieldErrors.goals ? `${inputError} min-h-[140px] resize-none pt-4` : `${inputBase} min-h-[140px] resize-none pt-4`}
               placeholder="Briefly describe what success looks like for you..."
+              value={goals}
+              onChange={(e) => setGoals(e.target.value)}
             />
+            {fieldErrors.goals && <p className="mt-1.5 ml-1 text-xs text-red-500 font-medium">{fieldErrors.goals}</p>}
           </div>
 
           {/* CTA Button */}
           <div className="mt-4">
             <button
               type="submit"
-              className="w-full rounded-2xl bg-gradient-to-r from-[#4461f2] to-[#8e44ff] px-4 py-5 text-base font-black text-white shadow-[0_15px_30px_-5px_rgba(68,97,242,0.4)] transition-all hover:scale-[1.01] active:scale-95"
+              disabled={submitting}
+              className={`w-full rounded-2xl bg-gradient-to-r from-[#4461f2] to-[#8e44ff] px-4 py-5 text-base font-black text-white shadow-[0_15px_30px_-5px_rgba(68,97,242,0.4)] transition-all ${
+                submitting
+                  ? "opacity-70 cursor-not-allowed"
+                  : "hover:scale-[1.01] active:scale-95"
+              }`}
             >
-              GET MY STRATEGY
+              {submitting ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Submitting…
+                </span>
+              ) : (
+                "GET MY STRATEGY"
+              )}
             </button>
             
             <p className="mt-4 flex items-center justify-center gap-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-tight">
