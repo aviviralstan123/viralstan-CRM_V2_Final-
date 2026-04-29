@@ -1,10 +1,11 @@
+import { useState, useEffect } from 'react';
 import '../packages/PosterPackages.css';
 import ecommerce  from '../../assets/MataADsPackagesImg/Container.png'
-// import im from '../../assets/MataADsPackagesImg/Poster1.png'
 import realestate from '../../assets/MataADsPackagesImg/Container1.png'
 import education from '../../assets/MataADsPackagesImg/Container2.png'
 import healthcare from '../../assets/MataADsPackagesImg/Container3.png'
 import startups  from '../../assets/MataADsPackagesImg/Container4.png'
+// Dynamic images will be loaded instead of these
 import poster1 from '../../assets/MataADsPackagesImg/Poster1.png'
 import poster2 from '../../assets/MataADsPackagesImg/Poster2.png'
 import poster3 from '../../assets/MataADsPackagesImg/Poster3.png'
@@ -16,6 +17,7 @@ import poster8 from '../../assets/MataADsPackagesImg/Poster8.png'
 import poster9 from '../../assets/MataADsPackagesImg/Poster9.png'
 import poster10 from '../../assets/MataADsPackagesImg/Poster10.png'
 import poster11 from '../../assets/MataADsPackagesImg/Poster11.png'
+import { getApiBaseUrl } from '../../features/publicBlog/utils/getApiBaseUrl';
 import {
   TrendingUp,
   Eye,
@@ -64,6 +66,53 @@ const steps = [
 ];
 
 function PosterPackages() {
+  const [topImages, setTopImages] = useState([
+    { image_url: poster1, alt: "Ad Creative" },
+    { image_url: poster2, alt: "Brand Visuals" },
+    { image_url: poster3, alt: "Dashboard Design" },
+    { image_url: poster4, alt: "High Engagement" },
+    { image_url: poster5, alt: "Social Media Design" }
+  ]);
+
+  const [bottomImages, setBottomImages] = useState([
+    { image_url: poster6 },
+    { image_url: poster7 },
+    { image_url: poster8 },
+    { image_url: poster9 },
+    { image_url: poster10 },
+    { image_url: poster11 }
+  ]);
+
+  useEffect(() => {
+    const fetchImages = async () => {
+      try {
+        const API_BASE = getApiBaseUrl();
+        const res = await fetch(`${API_BASE}/api/packages-gallery?type=orm`);
+        const json = await res.json();
+        
+        if (json.success && json.data.length > 0) {
+          const top = json.data.filter(img => img.section === 'top').sort((a, b) => a.order_index - b.order_index);
+          const bottom = json.data.filter(img => img.section === 'bottom').sort((a, b) => a.order_index - b.order_index);
+          
+          if (top.length > 0) setTopImages(top);
+          if (bottom.length > 0) setBottomImages(bottom);
+        }
+      } catch (error) {
+        console.error("Error fetching ORM gallery:", error);
+      }
+    };
+    fetchImages();
+  }, []);
+
+  // Top Section classes and labels map
+  const topConfig = [
+    { class: "hero-card-adpost", label: "Ad Creative", labelClass: "" },
+    { class: "hero-card-brandpost", label: "Brand Visuals", labelClass: "hero-card-label-bottompost" },
+    { class: "hero-card-centerpost", label: null, labelClass: "" },
+    { class: "hero-card-phonepost", label: "High Engagement", labelClass: "hero-card-label-top-rightpost" },
+    { class: "hero-card-socialpost", label: "Social Media Design", labelClass: "hero-card-label-bottom-rightpost" }
+  ];
+
   return (
     <>
     <section className="heropost" id="services">
@@ -83,84 +132,34 @@ function PosterPackages() {
       </div>
 
       <div className="hero-cardspost">
-        <div className="hero-cardpost hero-card-adpost">
-          <img
-            src={poster1}
-            alt="Ad Creative"
-          />
-          <span className="hero-card-labelpost">Ad Creative</span>
-        </div>
-
-        <div className="hero-cardpost hero-card-brandpost">
-          <img
-            src={poster2}
-            alt="Brand Visuals"
-          />
-          <span className="hero-card-labelpost hero-card-label-bottompost">Brand Visuals</span>
-        </div>
-
-        <div className="hero-cardpost hero-card-centerpost">
-          <img
-            src={poster3}
-            alt="Dashboard Design"
-          />
-        </div>
-
-        <div className="hero-cardpost hero-card-phonepost">
-          <img
-            src={poster4}
-            alt="High Engagement"
-          />
-          <span className="hero-card-labelpost hero-card-label-top-rightpost">High Engagement</span>
-        </div>
-
-        <div className="hero-cardpost hero-card-socialpost">
-          <img
-            src={poster5}
-            alt="Social Media Design"
-          />
-          <span className="hero-card-labelpost hero-card-label-bottom-rightpost">Social Media Design</span>
-        </div>
+        {topImages.slice(0, 5).map((img, idx) => {
+          const config = topConfig[idx] || topConfig[0];
+          return (
+            <div key={idx} className={`hero-cardpost ${config.class}`}>
+              <img
+                src={img.image_url}
+                alt={img.alt || config.label || "Design"}
+              />
+              {config.label && (
+                <span className={`hero-card-labelpost ${config.labelClass}`}>
+                  {config.label}
+                </span>
+              )}
+            </div>
+          );
+        })}
       </div>
     </section>
     <section className="showcasepost" id="showcase">
       <div className="showcase-gridpost">
-        <div className="showcase-itempost showcase-item-largepost">
-          <img
-            src={poster6}
-            alt="Abstract blue purple rays"
-          />
-        </div>
-        <div className="showcase-itempost showcase-item-smpost">
-          <img
-            src={poster7}
-            alt="Product mockup"
-          />
-        </div>
-        <div className="showcase-itempost showcase-item-smpost">
-          <img
-            src={poster8}
-            alt="Smartphone dark"
-          />
-        </div>
-        <div className="showcase-itempost showcase-item-smpost">
-          <img
-            src={poster9}
-            alt="UI Dashboard"
-          />
-        </div>
-        <div className="showcase-itempost showcase-item-smpost">
-          <img
-            src={poster10}
-            alt="Abstract orange red"
-          />
-        </div>
-        <div className="showcase-itempost showcase-item-smpost">
-          <img
-            src={poster11}
-            alt="Orange car"
-          />
-        </div>
+        {bottomImages.slice(0, 6).map((img, idx) => (
+          <div key={idx} className={`showcase-itempost ${idx === 0 ? 'showcase-item-largepost' : 'showcase-item-smpost'}`}>
+            <img
+              src={img.image_url}
+              alt="Showcase item"
+            />
+          </div>
+        ))}
       </div>
     </section>
     <section className="why-designpost">
